@@ -326,10 +326,12 @@ City::City(int nRows, int nCols)
 City::~City()
 {
     // DONE TODO:  Delete the player and all remaining dynamically allocated Tooters.
+    cerr << "entering city destructor" << endl;
     delete m_player;
     for (int i = 0; i < m_nTooters; i ++) {
         delete m_tooters[i];
     }
+    cerr << "leaving city destructor" << endl;
 }
 
 int City::rows() const
@@ -555,7 +557,9 @@ void City::moveTooters()
         int c = m_tooters[k]->col();
         int pr = player()->row();
         int pc = player()->col();
-        if(abs(r - pr) <= 1 && abs(c - pc) <= 1) {
+        
+        bool gassed = false;
+        if(abs(r - pr) <= 1 && abs(c - pc) <= 1 && !gassed) {
             cout << "adjacent player" << endl;
             this->player()->getGassed();
         }
