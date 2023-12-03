@@ -188,19 +188,19 @@ void Tooter::move()
     // Done TODO:  Move in the appropriate direction if allowed
     switch(dir) { // need to check if player is in the way
         case UP: // move up
-            if (m_row > 0 && m_row != m_city->player()->row() + 1)
+            if (m_row > 1 && !m_city->isPlayerAt(m_row - 1, m_col))
                 m_row --;
             break;
         case DOWN: // move down
-            if (m_row < m_city->rows() && m_row != m_city->player()->row() - 1)
+            if (m_row < m_city->rows() && !m_city->isPlayerAt(m_row + 1, m_col))
                 m_row ++;
             break;
         case LEFT: // move left
-            if (m_col > 0 && m_col != m_city->player()->col() + 1)
+            if (m_col > 1 && !m_city->isPlayerAt(m_row, m_col - 1))
                 m_col --;
             break;
         case RIGHT: // move right
-            if (m_col < m_city->cols() && m_col != m_city->player()->col() - 1)
+            if (m_col < m_city->cols() && !m_city->isPlayerAt(m_row, m_col + 1))
                 m_col ++;
             break;
     }
@@ -264,7 +264,7 @@ bool Player::isPassedOut() const
 {
     // DONE TODO: TRIVIAL:  Return whether the player is passed out.
     // Delete the following line and replace it with the correct code.
-    return m_health == 0;  // This implementation compiles, but is incorrect.
+    return m_health <= 0;  // This implementation compiles, but is incorrect.
 }
 
 void Player::preach()
@@ -281,7 +281,7 @@ void Player::move(int dir)
       //        otherwise, don't move.
     switch(dir) { // need to check if player is in the way
         case UP: // move up
-            if (m_row > 0 && m_city->nTootersAt(m_row - 1, m_col) == 0)
+            if (m_row > 1 && m_city->nTootersAt(m_row - 1, m_col) == 0)
                 m_row --;
             break;
         case DOWN: // move down
@@ -289,7 +289,7 @@ void Player::move(int dir)
                 m_row ++;
             break;
         case LEFT: // move left
-            if (m_col > 0 && m_city->nTootersAt(m_row, m_col - 1) == 0)
+            if (m_col > 1 && m_city->nTootersAt(m_row, m_col - 1) == 0)
                 m_col --;
             break;
         case RIGHT: // move right
@@ -355,7 +355,7 @@ bool City::isPlayerAt(int r, int c) const
 {
     // DONE TODO:  Return true if the player is at row r, column c, otherwise false.
     // Delete the following line and replace it with the correct code.
-    return m_player->col() == c && m_player->row() == r;  // This implementation compiles, but is incorrect.
+    return (m_player->col() == c && m_player->row() == r);  // This implementation compiles, but is incorrect.
 }
 
 int City::tooterCount() const
@@ -386,15 +386,17 @@ bool City::determineNewPosition(int& r, int& c, int dir) const
     {
       case UP:
         // DONE TODO:  Implement the behavior if dir is UP.
-            if(r > 0)
+            if(r > 1)
                 r --;
         break;
       case DOWN:
             if(r < m_rows)
                 r ++;
+            break;
       case LEFT:
-            if(c > 0)
+            if(c > 1)
                 c --;
+            break;
       case RIGHT:
             if(c < m_cols)
                 c ++;
@@ -425,12 +427,14 @@ void City::display() const
     for (int i = 0; i < m_nTooters; i ++) {
         int row = m_tooters[i]->row();
         int col = m_tooters[i]->col();
-        if (grid[row][col] == '.')
-            grid[row][col] = '1';
-        else if (grid[row][col] - '9' >= 0)
-            grid[row][col] = '9';
+        if (grid[row - 1][col - 1] == '.')
+            grid[row - 1][col - 1] = 'T';
+        else if(grid[row - 1][col - 1] == 'T')
+            grid[row - 1][col - 1] = '2';
+        else if (grid[row - 1][col - 1] - '9' >= 0)
+            grid[row - 1][col - 1] = '9';
         else
-            grid[row][col] ++;
+            grid[row - 1][col - 1] ++;
     }
 
         // Indicate player's position
@@ -488,7 +492,7 @@ bool City::addTooter(int r, int c)
         return false;
     }
     else {
-        m_tooters[m_nTooters] = new Tooter(this, r, c); // out of bounds error
+        m_tooters[m_nTooters] = new Tooter(this, r, c);
         m_nTooters ++;
     }
       // Your function must work as specified in the preceding paragraph even
@@ -547,6 +551,14 @@ void City::moveTooters()
       //        If that move results in that Tooter being orthogonally
       //        adjacent to the player, the player suffers a gas blast.
         m_tooters[k]->move();
+        int r = m_tooters[k]->row();
+        int c = m_tooters[k]->col();
+        int pr = player()->row();
+        int pc = player()->col();
+        if(abs(r - pr) <= 1 && abs(c - pc) <= 1) {
+            cout << "adjacent player" << endl;
+            this->player()->getGassed();
+        }
     }
 }
 
