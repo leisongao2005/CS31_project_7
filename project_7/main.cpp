@@ -547,6 +547,7 @@ void City::preachToTootersAroundPlayer()
 
 void City::moveTooters()
 {
+    bool gassed = false;
     for (int k = 0; k < m_nTooters; k++)
     {
       // TODO:  Have the k-th Tooter in the city make one move.
@@ -558,11 +559,12 @@ void City::moveTooters()
         int pr = player()->row();
         int pc = player()->col();
         
-        bool gassed = false;
+        
         if(abs(r - pr) <= 1 && abs(c - pc) <= 1 && !gassed) {
             cout << "adjacent player" << endl;
             this->player()->getGassed();
-        }
+            gassed = true;
+	}
     }
 }
 
